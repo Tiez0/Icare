@@ -39,10 +39,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.icare.R
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(navController: NavController) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -85,7 +86,7 @@ fun LoginScreen() {
                 contentDescription = "iCare Logo",
                 modifier = Modifier.size(170.dp)
             )
-            Spacer(modifier = Modifier.height(70.dp)) // Adjust space between logo and first text field
+            Spacer(modifier = Modifier.height(100.dp)) // Pushed the fields down
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
@@ -126,7 +127,7 @@ fun LoginScreen() {
             }
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedButton(
-                onClick = { /* TODO: Handle new access */ },
+                onClick = { navController.navigate("registration") },
                 modifier = Modifier.fillMaxWidth(),
                 border = BorderStroke(1.dp, Color(0xFF88e788)),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF88e788))
