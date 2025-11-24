@@ -17,25 +17,25 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.icare.ui.theme.IcareTheme
+import com.example.icare.viewmodel.UserViewModel
 
 @Composable
-fun HomeScreen(navController: NavController) {
-    var selectedItem by remember { mutableStateOf("Home") }
-    val items = listOf("Home", "Remédios", "Calendário", "Ajustes")
-    val icons = mapOf(
-        "Home" to Icons.Default.Home,
-        "Remédios" to Icons.Default.Medication,
-        "Calendário" to Icons.Default.DateRange,
-        "Ajustes" to Icons.Default.Settings
+fun HomeScreen(navController: NavController, userViewModel: UserViewModel) {
+    val innerNavController = rememberNavController()
+    val items = listOf(
+        Screen.Home,
+        Screen.Remedios,
+        Screen.Calendario,
+        Screen.Ajustes
     )
 
     Scaffold(
@@ -47,18 +47,20 @@ fun HomeScreen(navController: NavController) {
                 NavigationBar(
                     containerColor = Color.Transparent
                 ) {
+                    val navBackStackEntry by innerNavController.currentBackStackEntryAsState()
+                    val currentDestination = navBackStackEntry?.destination
                     items.forEach { screen ->
                         NavigationBarItem(
-                            icon = { Icon(icons[screen]!!, contentDescription = screen, tint = Color.Black) },
-                            label = { Text(screen, color = Color.Black) },
-                            selected = selectedItem == screen,
+                            icon = { Icon(screen.icon, contentDescription = screen.route, tint = Color.Black) },
+                            label = { Text(screen.route, color = Color.Black) },
+                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                             onClick = {
-                                selectedItem = screen
-                                when (screen) {
-                                    "Home" -> navController.navigate("home")
-                                    "Remédios" -> navController.navigate("remedios")
-                                    "Calendário" -> navController.navigate("calendario")
-                                    "Ajustes" -> navController.navigate("ajustes")
+                                innerNavController.navigate(screen.route) {
+                                    popUpTo(innerNavController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
                             },
                             colors = NavigationBarItemDefaults.colors(
@@ -74,20 +76,22 @@ fun HomeScreen(navController: NavController) {
             }
         }
     ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
+        NavHost(
+            innerNavController,
+            startDestination = Screen.Home.route,
+            Modifier.padding(innerPadding)
         ) {
-            // Content for each screen will go here later
+            composable(Screen.Home.route) { Text("Bem-vindo à Home!") }
+            composable(Screen.Remedios.route) { RemediosScreen(navController = innerNavController) }
+            composable(Screen.Calendario.route) { CalendarioScreen(navController = innerNavController) }
+            composable(Screen.Ajustes.route) { AjustesScreen(navController = navController, userViewModel = userViewModel) }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    IcareTheme {
-        HomeScreen(navController = rememberNavController())
-    }
+sealed class Screen(val route: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
+    object Home : Screen("Home", Icons.Default.Home)
+    object Remedios : Screen("Remédios", Icons.Default.Medication)
+    object Calendario : Screen("Calendário", Icons.Default.DateRange)
+    object Ajustes : Screen("Ajustes", Icons.Default.Settings)
 }

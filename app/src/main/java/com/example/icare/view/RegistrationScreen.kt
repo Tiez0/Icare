@@ -50,10 +50,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.icare.ui.theme.IcareTheme
+import com.example.icare.viewmodel.UserViewModel
 import java.util.Calendar
 
 @Composable
-fun RegistrationScreen(navController: NavController) {
+fun RegistrationScreen(navController: NavController, userViewModel: UserViewModel) {
     var name by remember { mutableStateOf("") }
     var dob by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -200,7 +201,10 @@ fun RegistrationScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { navController.navigate("home") },
+                onClick = {
+                    userViewModel.setUsername(name)
+                    navController.navigate("home")
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF88e788))
             ) {
@@ -221,6 +225,6 @@ fun RegistrationScreen(navController: NavController) {
 @Composable
 fun RegistrationScreenPreview() {
     IcareTheme {
-        RegistrationScreen(navController = rememberNavController())
+        RegistrationScreen(navController = rememberNavController(), userViewModel = UserViewModel())
     }
 }

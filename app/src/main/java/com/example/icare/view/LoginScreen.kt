@@ -43,9 +43,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.icare.R
+import com.example.icare.viewmodel.UserViewModel
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, userViewModel: UserViewModel) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -102,18 +103,14 @@ fun LoginScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = password,
-                onValueChange = {
-                    if (it.length <= 4 && it.all { char -> char.isDigit() }) {
-                        password = it
-                    }
-                },
+                onValueChange = { password = it },
                 label = { Text("Senha") },
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
                     Icon(Icons.Default.Lock, contentDescription = "Password Icon", tint = Color.Black)
                 },
                 textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     val image = if (passwordVisible)
@@ -127,7 +124,10 @@ fun LoginScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(24.dp))
             Button(
-                onClick = { navController.navigate("home") },
+                onClick = {
+                    userViewModel.setUsername(username)
+                    navController.navigate("home")
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF88e788))
             ) {

@@ -4,51 +4,42 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.icare.ui.theme.IcareTheme
-import com.example.icare.view.AjustesScreen
-import com.example.icare.view.CalendarioScreen
 import com.example.icare.view.HomeScreen
 import com.example.icare.view.LoginScreen
-import com.example.icare.view.RemediosScreen
 import com.example.icare.view.RegistrationScreen
+import com.example.icare.viewmodel.UserViewModel
 
 class MainActivity : ComponentActivity() {
+    private val userViewModel: UserViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             IcareTheme {
-                AppNavigation()
+                AppNavigation(userViewModel)
             }
         }
     }
 }
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(userViewModel: UserViewModel) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
-            LoginScreen(navController = navController)
+            LoginScreen(navController = navController, userViewModel = userViewModel)
         }
         composable("registration") {
-            RegistrationScreen(navController = navController)
+            RegistrationScreen(navController = navController, userViewModel = userViewModel)
         }
         composable("home") {
-            HomeScreen(navController = navController)
-        }
-        composable("remedios") {
-            RemediosScreen(navController = navController)
-        }
-        composable("calendario") {
-            CalendarioScreen(navController = navController)
-        }
-        composable("ajustes") {
-            AjustesScreen(navController = navController)
+            HomeScreen(navController = navController, userViewModel = userViewModel)
         }
     }
 }

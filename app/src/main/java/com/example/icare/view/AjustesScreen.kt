@@ -10,6 +10,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,9 +22,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.icare.ui.theme.IcareTheme
+import com.example.icare.viewmodel.UserViewModel
 
 @Composable
-fun AjustesScreen(navController: NavController) {
+fun AjustesScreen(navController: NavController, userViewModel: UserViewModel) {
+    val username by userViewModel.username.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -30,10 +35,15 @@ fun AjustesScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Usuário Logado", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Text(username ?: "Usuário não logado", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(32.dp))
         Button(
-            onClick = { navController.navigate("login") },
+            onClick = {
+                userViewModel.clearUsername()
+                navController.navigate("login") {
+                    popUpTo("home") { inclusive = true }
+                }
+            },
             colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
         ) {
             Text("Sair da Conta")
@@ -45,6 +55,6 @@ fun AjustesScreen(navController: NavController) {
 @Composable
 fun AjustesScreenPreview() {
     IcareTheme {
-        AjustesScreen(navController = rememberNavController())
+        AjustesScreen(navController = rememberNavController(), userViewModel = UserViewModel())
     }
 }
