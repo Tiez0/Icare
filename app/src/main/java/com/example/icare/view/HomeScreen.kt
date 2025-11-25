@@ -1,7 +1,5 @@
 package com.example.icare.view
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -19,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -89,7 +88,7 @@ fun HomeScreen(navController: NavController, userViewModel: UserViewModel) {
     }
 }
 
-sealed class Screen(val route: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
+sealed class Screen(val route: String, val icon: ImageVector) {
     object Home : Screen("Home", Icons.Default.Home)
     object Remedios : Screen("Remédios", Icons.Default.Medication)
     object Calendario : Screen("Calendário", Icons.Default.DateRange)
