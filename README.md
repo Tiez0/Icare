@@ -17,11 +17,11 @@ Servidor de banco de dados MongoDB, para armazenamento de perfis, prescrições 
 
 👥 Integrantes
 
-Flavio Augusto Dario de Moraes — RA [inserir RA]
+Flavio Augusto Dario de Moraes — RA 24008418
 
 Gabriel Henrique Pera Coelho — RA 24012508
 
-Henrique Monteiro da Silva — RA [inserir RA]
+Henrique Monteiro da Silva — 
 
 Narayan Fonseca Jakowatz — RA 24018023
 
