@@ -1,5 +1,6 @@
 package com.example.icare.view
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Accessibility
+import androidx.compose.material.icons.filled.Sos
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -70,6 +72,24 @@ fun AjustesScreen(navController: NavController, userViewModel: UserViewModel) {
                     checked = isHighContrastEnabled,
                     onCheckedChange = { isHighContrastEnabled = it }
                 )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { navController.navigate("sos_config") },
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Default.Sos, contentDescription = "SOS Icon")
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Configuração de SOS", fontSize = 18.sp)
             }
         }
         Spacer(modifier = Modifier.weight(1f))

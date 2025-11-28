@@ -39,10 +39,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.icare.R
+import com.example.icare.ui.theme.IcareTheme
 import com.example.icare.viewmodel.UserViewModel
 
 @Composable
@@ -143,5 +146,13 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel) {
                 Text("novo acesso")
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoginScreenPreview() {
+    IcareTheme {
+        LoginScreen(navController = rememberNavController(), userViewModel = UserViewModel())
     }
 }

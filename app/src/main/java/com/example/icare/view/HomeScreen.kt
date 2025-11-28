@@ -2,6 +2,7 @@ package com.example.icare.view
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,9 +15,11 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Sos
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -30,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -39,6 +43,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.icare.ui.theme.IcareTheme
 import com.example.icare.viewmodel.UserViewModel
 
 @Composable
@@ -87,6 +92,15 @@ fun HomeScreen(navController: NavController, userViewModel: UserViewModel) {
                     }
                 }
             }
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { navController.navigate("sos_config") },
+                containerColor = Color.Red,
+                contentColor = Color.White
+            ) {
+                Icon(Icons.Default.Sos, contentDescription = "SOS Button")
+            }
         }
     ) { innerPadding ->
         NavHost(
@@ -105,7 +119,9 @@ fun HomeScreen(navController: NavController, userViewModel: UserViewModel) {
 @Composable
 fun HomeContent(navController: NavController) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -133,4 +149,12 @@ sealed class Screen(val route: String, val icon: ImageVector) {
     object Remedios : Screen("Remédios", Icons.Default.Medication)
     object Calendario : Screen("Calendário", Icons.Default.DateRange)
     object Ajustes : Screen("Ajustes", Icons.Default.Settings)
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    IcareTheme {
+        HomeScreen(navController = rememberNavController(), userViewModel = UserViewModel())
+    }
 }

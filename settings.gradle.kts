@@ -21,4 +21,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Icare"
 include(":app")
- 

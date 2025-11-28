@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,6 +14,7 @@ import com.example.icare.ui.theme.IcareTheme
 import com.example.icare.view.HomeScreen
 import com.example.icare.view.LoginScreen
 import com.example.icare.view.RegistrationScreen
+import com.example.icare.view.SOSConfigScreen
 import com.example.icare.viewmodel.UserViewModel
 
 class MainActivity : ComponentActivity() {
@@ -41,5 +43,16 @@ fun AppNavigation() {
         composable("home") {
             HomeScreen(navController = navController, userViewModel = userViewModel)
         }
+        composable("sos_config") {
+            SOSConfigScreen(navController = navController)
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DefaultPreview() {
+    IcareTheme {
+        AppNavigation()
     }
 }
