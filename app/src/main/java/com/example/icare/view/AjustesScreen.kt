@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -47,20 +50,27 @@ fun AjustesScreen(navController: NavController, userViewModel: UserViewModel) {
         Spacer(modifier = Modifier.height(16.dp))
         Text(username ?: "Usuário não logado", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(32.dp))
-        Row(
+        Card(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Accessibility, contentDescription = "Accessibility Icon")
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Modo de Alto Contraste", fontSize = 18.sp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Accessibility, contentDescription = "Accessibility Icon")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Modo de Alto Contraste", fontSize = 18.sp)
+                }
+                Switch(
+                    checked = isHighContrastEnabled,
+                    onCheckedChange = { isHighContrastEnabled = it }
+                )
             }
-            Switch(
-                checked = isHighContrastEnabled,
-                onCheckedChange = { isHighContrastEnabled = it }
-            )
         }
         Spacer(modifier = Modifier.weight(1f))
         Button(
