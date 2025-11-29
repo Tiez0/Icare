@@ -57,6 +57,7 @@ import java.util.Calendar
 fun RegistrationScreen(navController: NavController, userViewModel: UserViewModel) {
     var name by remember { mutableStateOf("") }
     var dob by remember { mutableStateOf("") }
+    var cpf by remember { mutableStateOf("") } // Variável para o CPF
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -127,7 +128,7 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { datePickerDialog.show() },
-                enabled = false, // To make it non-editable and look clickable
+                enabled = false,
                 colors = OutlinedTextFieldDefaults.colors(
                     disabledTextColor = LocalContentColor.current.copy(LocalContentColor.current.alpha),
                     disabledBorderColor = MaterialTheme.colorScheme.outline,
@@ -137,6 +138,20 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
                 leadingIcon = {
                     Icon(Icons.Default.DateRange, contentDescription = "Select date")
                 },
+                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // CAMPO DE CPF ADICIONADO AQUI
+            OutlinedTextField(
+                value = cpf,
+                onValueChange = { cpf = it },
+                label = { Text("CPF") },
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = {
+                    Icon(Icons.Default.Person, contentDescription = "CPF Icon", tint = Color.Black)
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
             )
             Spacer(modifier = Modifier.height(8.dp))
