@@ -4,47 +4,45 @@ import java.util.concurrent.Semaphore;
 
 public class Parceiro {
     private Socket conexao;
-    private ObjectInputStream receptor;
-    private ObjectOutputStream transmissor;
-    private Comunicado proximoComunicado = null;
+    private BufferedReader receptor;
+    private PrintWriter transmissor;
+    private String proximaMensagem = null;
     private Semaphore mutEx = new Semaphore(1, true);
 
-    public Parceiro(Socket conexao, ObjectInputStream receptor, ObjectOutputStream transmissor) throws Exception {
+    public Parceiro(Socket conexao) throws Exception {
         if (conexao == null) throw new Exception("Conexao ausente");
-        if (receptor == null) throw new Exception("Receptor ausente");
-        if (transmissor == null) throw new Exception("Transmissor ausente");
         this.conexao = conexao;
-        this.receptor = receptor;
-        this.transmissor = transmissor;
+        // Configura para ler e escrever Texto (String)
+        this.receptor = new BufferedReader(new InputStreamReader(conexao.getInputStream()));
+        this.transmissor = new PrintWriter(conexao.getOutputStream(), true); // 'true' ativa o envio automático
     }
 
-    public void receba(Comunicado x) throws Exception {
+    public void receba(String msg) throws Exception {
         try {
-            this.transmissor.writeObject(x);
-            this.transmissor.flush();
-        } catch (IOException erro) {
+            this.transmissor.println(msg); // Envia texto com quebra de linha
+        } catch (Exception erro) {
             throw new Exception("Erro de transmissao");
         }
     }
 
-    public Comunicado espie() throws Exception {
+    public String espie() throws Exception {
         try {
             this.mutEx.acquireUninterruptibly();
-            if (this.proximoComunicado == null)
-                this.proximoComunicado = (Comunicado) this.receptor.readObject();
+            if (this.proximaMensagem == null)
+                this.proximaMensagem = this.receptor.readLine();
             this.mutEx.release();
-            return this.proximoComunicado;
+            return this.proximaMensagem;
         } catch (Exception erro) {
             throw new Exception("Erro de recepcao");
         }
     }
 
-    public Comunicado envie() throws Exception {
+    public String envie() throws Exception {
         try {
-            if (this.proximoComunicado == null)
-                this.proximoComunicado = (Comunicado) this.receptor.readObject();
-            Comunicado ret = this.proximoComunicado;
-            this.proximoComunicado = null;
+            if (this.proximaMensagem == null)
+                this.proximaMensagem = this.receptor.readLine();
+            String ret = this.proximaMensagem;
+            this.proximaMensagem = null;
             return ret;
         } catch (Exception erro) {
             throw new Exception("Erro de recepcao");

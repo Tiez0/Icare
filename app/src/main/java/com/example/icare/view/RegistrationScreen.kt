@@ -1,5 +1,7 @@
 package com.example.icare.view
 
+import PedidoDeCadastro
+import Resultado
 import android.app.DatePickerDialog
 import android.widget.DatePicker
 import androidx.compose.foundation.Canvas
@@ -58,6 +60,7 @@ import android.widget.Toast
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.net.Socket
+import androidx.compose.runtime.collectAsState
 
 
 @Composable
@@ -65,6 +68,7 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
     var name by remember { mutableStateOf("") }
     var dob by remember { mutableStateOf("") }
     var cpf by remember { mutableStateOf("") } // Variável para o CPF
+    val validationStatus by userViewModel.validationResult.collectAsState()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -162,6 +166,21 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
                 textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
             )
             Spacer(modifier = Modifier.height(8.dp))
+
+            // Botão Pequeno para Validar
+            Button(
+                onClick = { userViewModel.validarCpf(cpf) },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Blue)
+            ) {
+                Text("Verificar CPF no Servidor")
+            }
+
+            // Texto que mostra a resposta do servidor
+            Text(
+                text = validationStatus,
+                color = if (validationStatus.contains("Válido")) Color.Green else Color.Red,
+                fontWeight = FontWeight.Bold
+            )
 
             OutlinedTextField(
                 value = email,
