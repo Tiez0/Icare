@@ -1,21 +1,34 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    id("com.android.application") version "8.5.0"
+    kotlin("android") version "2.0.0"
+
+    // Obrigatório para Compose no Kotlin 2.x
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
 }
 
 android {
     namespace = "com.example.icare"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.icare"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+    }
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        // Ignorado no Kotlin 2.x — mantenho para compatibilidade
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
+
+    packaging {
+        resources.excludes.add("/META-INF/{AL2.0,LGPL2.1}")
     }
 
     buildTypes {
@@ -27,35 +40,42 @@ android {
             )
         }
     }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
-        jvmTarget = "11"
-    }
-    buildFeatures {
-        compose = true
+        jvmTarget = "17"
     }
 }
 
 dependencies {
+    // Compose BOM
+    implementation(platform("androidx.compose:compose-bom:2024.02.00"))
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation("androidx.compose.material:material-icons-extended-android:1.6.7")
+    // Compose UI
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // Material3
+    implementation("androidx.compose.material3:material3")
+
+    // Activity Compose
+    implementation("androidx.activity:activity-compose:1.8.2")
+
+    // Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.7")
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+
+    // ViewModel Compose
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+
+    // LiveData runtime
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+
+    // icons (extended)
+    implementation("androidx.compose.material:material-icons-extended")
+
 }

@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
@@ -57,6 +59,7 @@ import java.util.Calendar
 fun RegistrationScreen(navController: NavController, userViewModel: UserViewModel) {
     var name by remember { mutableStateOf("") }
     var dob by remember { mutableStateOf("") }
+    var cpf by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -65,6 +68,21 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
+
+    // Lógica de validação do email
+    val isEmailValid = email.isNotBlank() && email.contains("@")
+    val emailError = email.isNotBlank() && !email.contains("@")
+
+    // Lógica para validação do formulário
+    val isFormValid = name.isNotBlank() &&
+            dob.isNotBlank() &&
+            cpf.length == 11 &&
+            isEmailValid &&
+            password.isNotBlank() &&
+            confirmPassword == password
+
+    // Lógica para erro de confirmação de senha
+    val passwordMismatch = password.isNotBlank() && confirmPassword.isNotBlank() && password != confirmPassword
 
     val datePickerDialog = DatePickerDialog(
         context,
@@ -101,7 +119,8 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()), // Adicionado para rolagem
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(100.dp))
@@ -113,6 +132,7 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
                 onValueChange = { name = it },
                 label = { Text("Nome Completo") },
                 modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
                 leadingIcon = {
                     Icon(Icons.Default.Person, contentDescription = "Person Icon", tint = Color.Black)
                 },
@@ -127,7 +147,7 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { datePickerDialog.show() },
-                enabled = false, // To make it non-editable and look clickable
+                enabled = false,
                 colors = OutlinedTextFieldDefaults.colors(
                     disabledTextColor = LocalContentColor.current.copy(LocalContentColor.current.alpha),
                     disabledBorderColor = MaterialTheme.colorScheme.outline,
@@ -142,6 +162,24 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
+                value = cpf,
+                onValueChange = { newCpf ->
+                    if (newCpf.length <= 11 && newCpf.all { it.isDigit() }) {
+                        cpf = newCpf
+                    }
+                },
+                label = { Text("CPF") },
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = {
+                    Icon(Icons.Default.Person, contentDescription = "CPF Icon", tint = Color.Black)
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
@@ -150,6 +188,13 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
                     Icon(Icons.Default.Email, contentDescription = "Email Icon", tint = Color.Black)
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                singleLine = true,
+                isError = emailError,
+                supportingText = {
+                    if (emailError) {
+                        Text("Email inválido", color = MaterialTheme.colorScheme.error)
+                    }
+                },
                 textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -164,11 +209,9 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
                 },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                singleLine = true,
                 trailingIcon = {
-                    val image = if (passwordVisible)
-                        Icons.Filled.Visibility
-                    else Icons.Filled.VisibilityOff
-
+                    val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(imageVector = image, "toggle password visibility", tint = Color.Black)
                     }
@@ -187,13 +230,17 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
                 },
                 visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                singleLine = true,
                 trailingIcon = {
-                    val image = if (confirmPasswordVisible)
-                        Icons.Filled.Visibility
-                    else Icons.Filled.VisibilityOff
-
+                    val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                         Icon(imageVector = image, "toggle password visibility", tint = Color.Black)
+                    }
+                },
+                isError = passwordMismatch,
+                supportingText = {
+                    if (passwordMismatch) {
+                        Text("As senhas não correspondem", color = MaterialTheme.colorScheme.error)
                     }
                 },
                 textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -206,7 +253,8 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
                     navController.navigate("home")
                 },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF88e788))
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF88e788)),
+                enabled = isFormValid // Botão habilitado/desabilitado pela validação
             ) {
                 Text("Cadastrar")
             }
