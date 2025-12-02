@@ -143,7 +143,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel) {
                 border = BorderStroke(1.dp, Color(0xFF88e788)),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF88e788))
             ) {
-                Text("novo acesso")
+                Text("Realizar Cadastro")
             }
         }
     }

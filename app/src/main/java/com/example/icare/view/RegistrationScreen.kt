@@ -52,6 +52,13 @@ import androidx.navigation.compose.rememberNavController
 import com.example.icare.ui.theme.IcareTheme
 import com.example.icare.viewmodel.UserViewModel
 import java.util.Calendar
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+import java.net.Socket
+
 
 @Composable
 fun RegistrationScreen(navController: NavController, userViewModel: UserViewModel) {
@@ -217,14 +224,76 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
 
             Button(
                 onClick = {
-                    userViewModel.setUsername(name)
-                    navController.navigate("home")
+                    // validações básicas no app antes de chamar o servidor
+                    if (name.isBlank() || dob.isBlank() || cpf.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
+                        Toast.makeText(context, "Preencha todos os campos", Toast.LENGTH_LONG).show()
+                        return@Button
+                    }
+
+                    if (password != confirmPassword) {
+                        Toast.makeText(context, "As senhas não coincidem", Toast.LENGTH_LONG).show()
+                        return@Button
+                    }
+
+                    // IMPORTANTE:
+                    // - Se estiver usando EMULADOR e o servidor Java rodando no seu PC,
+                    //   use "10.0.2.2" como host.
+                    // - Se estiver com dispositivo físico, use o IP da máquina na rede (ex: 192.168.x.x)
+                    val host = "10.0.2.2"   // para emulador Android falando com servidor no PC
+                    val porta = 3000        // mesma porta do Servidor.java (PORTA_PADRAO)
+
+                    Thread {
+                        try {
+                            // Abre conexão com o servidor Java
+                            val socket = Socket(host, porta)
+                            val output = ObjectOutputStream(socket.getOutputStream())
+                            val input = ObjectInputStream(socket.getInputStream())
+
+                            // Monta o pedido de cadastro com TODOS os campos
+                            val pedido = PedidoDeCadastro(
+                                nome = name,
+                                dataNascimento = dob,
+                                cpf = cpf,
+                                email = email,
+                                senha = password
+                            )
+
+                            // Envia o objeto para o servidor
+                            output.writeObject(pedido)
+                            output.flush()
+
+                            // Espera um objeto Resultado vindo do servidor
+                            val resposta = input.readObject()
+                            val sucesso = (resposta as? Resultado)?.isValido() ?: false
+
+                            input.close()
+                            output.close()
+                            socket.close()
+
+                            // Atualiza UI na thread principal
+                            Handler(Looper.getMainLooper()).post {
+                                if (sucesso) {
+                                    Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_LONG).show()
+                                    userViewModel.setUsername(name)
+                                    navController.navigate("home")
+                                } else {
+                                    Toast.makeText(context, "CPF inválido ou erro ao salvar cadastro.", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            Handler(Looper.getMainLooper()).post {
+                                Toast.makeText(context, "Erro ao conectar ao servidor.", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }.start()
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF88e788))
             ) {
                 Text("Cadastrar")
             }
+
         }
 
         IconButton(
