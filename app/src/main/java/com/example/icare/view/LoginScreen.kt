@@ -101,7 +101,8 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel) {
                 leadingIcon = {
                     Icon(Icons.Default.Person, contentDescription = "Person Icon", tint = Color.Black)
                 },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                // Estilo do texto forçado para preto e negrito
+                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
@@ -112,7 +113,8 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel) {
                 leadingIcon = {
                     Icon(Icons.Default.Lock, contentDescription = "Password Icon", tint = Color.Black)
                 },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold),
+                // Estilo do texto forçado para preto e negrito
+                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -129,7 +131,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel) {
             Button(
                 onClick = {
                     userViewModel.setUsername(username)
-                    navController.navigate("home")
+                    navController.navigate("main") // Navega para a MainScreen
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF88e788))

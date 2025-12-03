@@ -1,53 +1,44 @@
 package com.example.icare.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+// Paleta de Cores Padrão (Tema Claro)
+private val LightColorScheme = lightColorScheme(
+    primary = Color(0xFF88e788),      // Verde claro
+    onPrimary = Color.Black,          // Texto preto sobre o verde
+    background = Color.White,
+    surface = Color.White,
+    onBackground = Color.Black,
+    onSurface = Color.Black,
+    error = Color.Red,                // Vermelho para erros
+    onError = Color.White             // Branco sobre o vermelho
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+// Paleta de Cores de Alto Contraste (Sua visão)
+private val HighContrastColorScheme = darkColorScheme(
+    primary = Color(0xFFFFC107),      // Amarelo no lugar do verde
+    onPrimary = Color.Black,          // Texto preto sobre amarelo para contraste máximo
+    background = Color.Black,
+    surface = Color.Black,
+    onBackground = Color.White,
+    onSurface = Color.White,
+    error = Color(0xFF9C27B0),        // Roxo no lugar do vermelho
+    onError = Color.White             // Branco sobre o roxo
 )
 
 @Composable
 fun IcareTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    useHighContrast: Boolean = false, // Parâmetro para controlar o tema
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    val colorScheme = if (useHighContrast) {
+        HighContrastColorScheme
+    } else {
+        LightColorScheme
     }
 
     MaterialTheme(
