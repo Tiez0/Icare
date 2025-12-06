@@ -2,40 +2,18 @@ package com.example.icare.view
 
 import android.app.DatePickerDialog
 import android.widget.DatePicker
+import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,16 +21,25 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.*
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.icare.PedidoDeValidacao
+import com.example.icare.Resultado
+import com.example.icare.UsuarioMongo // <--- Usando a classe nova
 import com.example.icare.ui.theme.IcareTheme
 import com.example.icare.viewmodel.UserViewModel
+// Imports do Driver Mongo Novo
+import com.mongodb.kotlin.client.coroutine.MongoClient
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+import java.net.Socket
 import java.util.Calendar
 
 @Composable
@@ -65,214 +52,121 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
+    val scope = rememberCoroutineScope()
 
-    // Lógica de validação do email
-    val isEmailValid = email.isNotBlank() && email.contains("@")
-    val emailError = email.isNotBlank() && !email.contains("@")
-
-    // Lógica para validação do formulário
-    val isFormValid = name.isNotBlank() &&
-            dob.isNotBlank() &&
-            cpf.length == 11 &&
-            isEmailValid &&
-            password.isNotBlank() &&
-            confirmPassword == password
-
-    // Lógica para erro de confirmação de senha
-    val passwordMismatch = password.isNotBlank() && confirmPassword.isNotBlank() && password != confirmPassword
+    // Validações básicas
+    val isFormValid = name.isNotBlank() && cpf.length == 11 && email.contains("@") &&
+            password.isNotBlank() && confirmPassword == password
 
     val datePickerDialog = DatePickerDialog(
-        context,
-        { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            dob = "$dayOfMonth/${month + 1}/$year"
-        },
-        calendar.get(Calendar.YEAR),
-        calendar.get(Calendar.MONTH),
-        calendar.get(Calendar.DAY_OF_MONTH)
+        context, { _, year, month, day -> dob = "$day/${month + 1}/$year" },
+        calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-        ) {
-            val curveHeight = 50.dp.toPx()
+        // Fundo Verde
+        Canvas(modifier = Modifier.fillMaxWidth().height(300.dp)) {
             val path = Path().apply {
-                moveTo(0f, 0f)
-                lineTo(size.width, 0f)
-                lineTo(size.width, size.height - curveHeight)
-                quadraticBezierTo(
-                    x1 = size.width / 2,
-                    y1 = size.height,
-                    x2 = 0f,
-                    y2 = size.height - curveHeight
-                )
-                close()
+                moveTo(0f, 0f); lineTo(size.width, 0f); lineTo(size.width, size.height - 50.dp.toPx())
+                quadraticBezierTo(size.width / 2, size.height, 0f, size.height - 50.dp.toPx()); close()
             }
             drawPath(path, color = Color(0xFF88e788))
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // Adicionado para rolagem
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(modifier = Modifier.height(100.dp))
             Text("Criar Nova Conta", fontSize = 32.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
             Spacer(modifier = Modifier.height(135.dp))
 
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Nome Completo") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                leadingIcon = {
-                    Icon(Icons.Default.Person, contentDescription = "Person Icon", tint = Color.Black)
-                },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            )
+            // Campos (Resumidos para caber, mantenha o visual igual)
+            OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nome") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.Person, null) })
             Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = dob,
-                onValueChange = { dob = it },
-                label = { Text("Data de Nascimento") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { datePickerDialog.show() },
-                enabled = false,
-                colors = OutlinedTextFieldDefaults.colors(
-                    disabledTextColor = LocalContentColor.current.copy(LocalContentColor.current.alpha),
-                    disabledBorderColor = MaterialTheme.colorScheme.outline,
-                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledLeadingIconColor = Color.Black
-                ),
-                leadingIcon = {
-                    Icon(Icons.Default.DateRange, contentDescription = "Select date")
-                },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            )
+            OutlinedTextField(value = dob, onValueChange = {}, label = { Text("Nascimento") }, modifier = Modifier.fillMaxWidth().clickable { datePickerDialog.show() }, enabled = false, leadingIcon = { Icon(Icons.Default.DateRange, null) })
             Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = cpf,
-                onValueChange = { newCpf ->
-                    if (newCpf.length <= 11 && newCpf.all { it.isDigit() }) {
-                        cpf = newCpf
-                    }
-                },
-                label = { Text("CPF") },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(Icons.Default.Person, contentDescription = "CPF Icon", tint = Color.Black)
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            )
+            OutlinedTextField(value = cpf, onValueChange = { if (it.length <= 11) cpf = it }, label = { Text("CPF") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), leadingIcon = { Icon(Icons.Default.Person, null) })
             Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(Icons.Default.Email, contentDescription = "Email Icon", tint = Color.Black)
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                singleLine = true,
-                isError = emailError,
-                supportingText = {
-                    if (emailError) {
-                        Text("Email inválido", color = MaterialTheme.colorScheme.error)
-                    }
-                },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            )
+            OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.Email, null) })
             Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Senha") },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = "Password Icon", tint = Color.Black)
-                },
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true,
-                trailingIcon = {
-                    val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = image, "toggle password visibility", tint = Color.Black)
-                    }
-                },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            )
+            OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Senha") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation(), leadingIcon = { Icon(Icons.Default.Lock, null) })
             Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                label = { Text("Confirmar Senha") },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = "Password Icon", tint = Color.Black)
-                },
-                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true,
-                trailingIcon = {
-                    val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                        Icon(imageVector = image, "toggle password visibility", tint = Color.Black)
-                    }
-                },
-                isError = passwordMismatch,
-                supportingText = {
-                    if (passwordMismatch) {
-                        Text("As senhas não correspondem", color = MaterialTheme.colorScheme.error)
-                    }
-                },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            )
+            OutlinedTextField(value = confirmPassword, onValueChange = { confirmPassword = it }, label = { Text("Confirmar") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation(), leadingIcon = { Icon(Icons.Default.Lock, null) })
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = {
-                    userViewModel.setUsername(name)
-                    navController.navigate("home")
+                    isLoading = true
+                    scope.launch(Dispatchers.IO) {
+                        var socket: Socket? = null
+                        var mongoClient: MongoClient? = null
+
+                        try {
+                            // 1. VALIDAÇÃO NO SERVIDOR JAVA (SOCKET)
+                            socket = Socket("10.0.2.2", 3000)
+                            val output = ObjectOutputStream(socket.getOutputStream())
+                            val input = ObjectInputStream(socket.getInputStream())
+
+                            output.writeObject(PedidoDeValidacao(cpf))
+                            output.flush()
+
+                            val resposta = input.readObject()
+
+                            // Se o servidor Java disse que é válido...
+                            if (resposta is Resultado && resposta.isValido) {
+                                try {
+                                    // 2. SALVA NO MONGODB (CONEXÃO DIRETA)
+                                    // SUBSTITUA <db_password> PELA SUA SENHA REAL DO BANCO
+                                    // Note que começa só com "mongodb://" e tem vários endereços separados por vírgula
+                                    val connectionString = "mongodb://flaviodario2017_db_user:Senha1@cluster0-shard-00-00.3jthsk8.mongodb.net:27017,cluster0-shard-00-01.3jthsk8.mongodb.net:27017,cluster0-shard-00-02.3jthsk8.mongodb.net:27017/?ssl=true&replicaSet=atlas-xxxxx-shard-0&authSource=admin&retryWrites=true&w=majority"
+                                    mongoClient = MongoClient.create(connectionString)
+                                    val database = mongoClient.getDatabase("iCare")
+                                    val collection = database.getCollection<UsuarioMongo>("usuarios")
+
+                                    val novoUsuario = UsuarioMongo(
+                                        nome = name,
+                                        cpf = cpf,
+                                        dataNascimento = dob,
+                                        email = email
+                                    )
+
+                                    collection.insertOne(novoUsuario)
+
+                                    withContext(Dispatchers.Main) {
+                                        userViewModel.setUsername(name)
+                                        Toast.makeText(context, "Conta Criada e Salva!", Toast.LENGTH_LONG).show()
+                                        navController.navigate("home")
+                                    }
+                                } catch (e: Exception) {
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(context, "Erro Mongo: ${e.message}", Toast.LENGTH_LONG).show()
+                                        e.printStackTrace()
+                                    }
+                                }
+                            } else {
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(context, "CPF Inválido!", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(context, "Erro Geral: ${e.message}", Toast.LENGTH_LONG).show()
+                                e.printStackTrace()
+                            }
+                        } finally {
+                            try { socket?.close(); mongoClient?.close() } catch (e: Exception) {}
+                            isLoading = false
+                        }
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF88e788)),
-                enabled = isFormValid // Botão habilitado/desabilitado pela validação
+                enabled = isFormValid && !isLoading
             ) {
-                Text("Cadastrar")
+                if (isLoading) Text("Processando...") else Text("Cadastrar")
             }
         }
-
-        IconButton(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.padding(8.dp)
-        ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar", tint = Color.Black)
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RegistrationScreenPreview() {
-    IcareTheme {
-        RegistrationScreen(navController = rememberNavController(), userViewModel = UserViewModel())
     }
 }
