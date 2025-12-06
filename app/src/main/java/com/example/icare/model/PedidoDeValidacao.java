@@ -1,3 +1,5 @@
+package com.example.icare.model;
+
 public class PedidoDeValidacao extends Comunicado {
     private String cpf;
 

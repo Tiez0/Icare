@@ -32,6 +32,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,8 +67,21 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
+    // Observa o resultado do cadastro vindo do servidor
+    val cadastroStatus by userViewModel.cadastroStatus.collectAsState()
+
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
+
+    // Lógica de navegação automática em caso de sucesso
+    if (cadastroStatus == true) {
+        // Reseta o status para evitar loops de navegação se o usuário voltar
+        userViewModel.resetCadastroStatus()
+        // Navega para a tela Home e remove o login da pilha (para não voltar com o botão 'voltar')
+        navController.navigate("home") {
+            popUpTo("login") { inclusive = true }
+        }
+    }
 
     // Lógica de validação do email
     val isEmailValid = email.isNotBlank() && email.contains("@")
@@ -120,7 +134,7 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // Adicionado para rolagem
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(100.dp))
@@ -249,14 +263,25 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
 
             Button(
                 onClick = {
-                    userViewModel.setUsername(name)
-                    navController.navigate("home")
+                    // Chama a função que conecta ao servidor Java
+                    userViewModel.cadastrarUsuario(name, cpf, email, password)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF88e788)),
-                enabled = isFormValid // Botão habilitado/desabilitado pela validação
+                enabled = isFormValid // Botão habilitado apenas se o formulário estiver válido
             ) {
                 Text("Cadastrar")
+            }
+
+            // Exibe mensagem de erro se o servidor responder com falha
+            if (cadastroStatus == false) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Erro ao realizar cadastro. Verifique a conexão.",
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
 

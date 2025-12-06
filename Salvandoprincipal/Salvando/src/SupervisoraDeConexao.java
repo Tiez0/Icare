@@ -1,3 +1,5 @@
+import com.example.icare.model.*;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -6,12 +8,15 @@ public class SupervisoraDeConexao extends Thread {
     private Parceiro usuario;
     private Socket conexao;
     private ArrayList<Parceiro> usuarios;
+    private BancoDeDados banco; // Adicionado para integração com MongoDB
 
     public SupervisoraDeConexao(Socket conexao, ArrayList<Parceiro> usuarios) throws Exception {
         if (conexao == null) throw new Exception("Conexao ausente");
         if (usuarios == null) throw new Exception("Usuarios ausentes");
         this.conexao = conexao;
         this.usuarios = usuarios;
+        // Inicializa a conexão com o banco de dados
+        this.banco = new BancoDeDados();
     }
 
     public void run() {
@@ -45,14 +50,33 @@ public class SupervisoraDeConexao extends Thread {
                 Comunicado comunicado = this.usuario.envie();
 
                 if (comunicado == null) return;
+
+                    // --- NOVO: LÓGICA DE CADASTRO ---
+                else if (comunicado instanceof PedidoDeCadastro) {
+                    PedidoDeCadastro pedido = (PedidoDeCadastro) comunicado;
+
+                    try {
+                        // Tenta salvar no MongoDB usando a classe BancoDeDados
+                        this.banco.salvarUsuario(
+                                pedido.getNome(),
+                                pedido.getCpf(),
+                                pedido.getEmail(),
+                                pedido.getSenha()
+                        );
+
+                        // Responde ao cliente que foi válido/sucesso
+                        this.usuario.receba(new Resultado(true));
+                    } catch (Exception e) {
+                        System.err.println("Erro ao salvar no banco: " + e.getMessage());
+                        this.usuario.receba(new Resultado(false));
+                    }
+                }
+                // --- FIM DA LÓGICA DE CADASTRO ---
+
+                // Mantém a lógica antiga de Validação de CPF
                 else if (comunicado instanceof PedidoDeValidacao) {
-                    // Recebeu um CPF para validar
                     PedidoDeValidacao pedido = (PedidoDeValidacao) comunicado;
-
-                    // Executa a validação
                     boolean ehValido = validarCPF(pedido.getCpf());
-
-                    // Envia o resultado de volta
                     this.usuario.receba(new Resultado(ehValido));
 
                 } else if (comunicado instanceof PedidoParaSair) {
@@ -71,7 +95,7 @@ public class SupervisoraDeConexao extends Thread {
         }
     }
 
-    // Método auxiliar com a lógica padrão de validação de CPF
+    // Método auxiliar com a lógica padrão de validação de CPF (Mantido do original)
     private boolean validarCPF(String cpf) {
         // Remove caracteres não numéricos
         cpf = cpf.replaceAll("[^0-9]", "");

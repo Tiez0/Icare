@@ -1,5 +1,7 @@
-import java.net.*;
+import com.example.icare.model.*;
 import java.io.*;
+import java.net.*;
+import java.util.*;
 
 public class Cliente {
     public static final String HOST_PADRAO = "localhost";

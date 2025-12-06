@@ -1,3 +1,6 @@
+import com.example.icare.model.*;
+import com.example.icare.model.Comunicado;
+
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.Semaphore;

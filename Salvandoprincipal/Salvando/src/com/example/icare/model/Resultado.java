@@ -1,3 +1,5 @@
+package com.example.icare.model;
+
 public class Resultado extends Comunicado {
     private boolean valido;
 
@@ -7,10 +9,5 @@ public class Resultado extends Comunicado {
 
     public boolean isValido() {
         return this.valido;
-    }
-
-    // Opcional: para facilitar impressão se necessário
-    public String toString() {
-        return this.valido ? "Válido" : "Inválido";
     }
 }
