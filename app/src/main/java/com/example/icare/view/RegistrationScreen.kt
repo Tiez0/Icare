@@ -184,10 +184,3 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun RegistrationScreenPreview() {
-    IcareTheme {
-        RegistrationScreen(navController = rememberNavController(), userViewModel = UserViewModel())
-    }
-}

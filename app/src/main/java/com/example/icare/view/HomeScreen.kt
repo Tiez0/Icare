@@ -1,39 +1,22 @@
 package com.example.icare.view
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Medication
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Sos
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -43,12 +26,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.icare.ui.theme.IcareTheme
 import com.example.icare.viewmodel.UserViewModel
 
 @Composable
 fun HomeScreen(navController: NavController, userViewModel: UserViewModel) {
     val innerNavController = rememberNavController()
+
     val items = listOf(
         Screen.Home,
         Screen.Remedios,
@@ -70,91 +53,181 @@ fun HomeScreen(navController: NavController, userViewModel: UserViewModel) {
                     items.forEach { screen ->
                         NavigationBarItem(
                             icon = { Icon(screen.icon, contentDescription = screen.route, tint = Color.Black) },
-                            label = { Text(screen.route, color = Color.Black) },
+                            label = { Text(screen.label, color = Color.Black, fontSize = 10.sp) },
                             selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                             onClick = {
                                 innerNavController.navigate(screen.route) {
-                                    popUpTo(innerNavController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
+                                    popUpTo(innerNavController.graph.findStartDestination().id) { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
                                 }
                             },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = Color.White.copy(alpha = 0.5f),
-                                unselectedTextColor = Color.Black,
-                                selectedTextColor = Color.Black,
-                                selectedIconColor = Color.Black,
-                                unselectedIconColor = Color.Black
-                            )
+                            colors = NavigationBarItemDefaults.colors(indicatorColor = Color.White.copy(alpha = 0.5f))
                         )
                     }
                 }
             }
         },
         floatingActionButton = {
+            val contatoSOS by userViewModel.contatoSOS.collectAsState()
+
             FloatingActionButton(
-                onClick = { navController.navigate("sos_config") },
+                onClick = {
+                    if (contatoSOS != null) {
+                        // Se já tem contato, LIGA (tela vermelha)
+                        navController.navigate("sos_call")
+                    } else {
+                        // Se não tem, vai configurar
+                        navController.navigate("sos_config")
+                    }
+                },
                 containerColor = Color.Red,
                 contentColor = Color.White
             ) {
-                Icon(Icons.Default.Sos, contentDescription = "SOS Button")
+                Icon(Icons.Default.Sos, contentDescription = "SOS")
             }
         }
     ) { innerPadding ->
         NavHost(
-            innerNavController,
+            navController = innerNavController,
             startDestination = Screen.Home.route,
-            Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Home.route) { HomeContent(innerNavController) }
-            composable(Screen.Remedios.route) { RemediosScreen(navController = innerNavController) }
-            composable(Screen.Calendario.route) { CalendarioScreen(navController = innerNavController) }
+            composable(Screen.Home.route) { HomeContent(innerNavController, userViewModel) }
+            composable(Screen.Remedios.route) { RemediosScreen(navController = innerNavController, userViewModel = userViewModel) }
+            composable(Screen.Calendario.route) { CalendarioScreen(navController = innerNavController, userViewModel = userViewModel) }
             composable(Screen.Ajustes.route) { AjustesScreen(navController = navController, userViewModel = userViewModel) }
         }
     }
 }
 
 @Composable
-fun HomeContent(navController: NavController) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Card(
+fun HomeContent(navController: NavController, userViewModel: UserViewModel) {
+    val username by userViewModel.username.collectAsState()
+    val remedios by userViewModel.remedios.collectAsState()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Fundo Verde Curvo
+        Canvas(modifier = Modifier.fillMaxWidth().height(250.dp)) {
+            val curveHeight = 50.dp.toPx()
+            val path = Path().apply {
+                moveTo(0f, 0f); lineTo(size.width, 0f); lineTo(size.width, size.height - curveHeight)
+                quadraticBezierTo(size.width / 2, size.height, 0f, size.height - curveHeight); close()
+            }
+            drawPath(path, color = Color(0xFF88e788))
+        }
+
+        // Coluna Principal com Rolagem Vertical
+        Column(
             modifier = Modifier
-                .size(150.dp)
-                .clickable { navController.navigate(Screen.Remedios.route) },
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                .padding(16.dp)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()) // Permite rolar a tela toda
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Adicionar Remédio", modifier = Modifier.size(48.dp))
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Adicionar Remédio", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = "Olá, ${username?.substringBefore("@") ?: "Usuário"}!",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+            Text(
+                text = "Bem-vindo ao iCare",
+                fontSize = 16.sp,
+                color = Color.White.copy(alpha = 0.9f)
+            )
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            Text(
+                text = "Lista de medicamentos",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Lógica da Lista Vertical
+            if (remedios.isEmpty()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth().height(100.dp).clickable { navController.navigate(Screen.Remedios.route) },
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)),
+                    elevation = CardDefaults.cardElevation(2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null, tint = Color.Gray)
+                        Text("Toque para adicionar um remédio", color = Color.Gray)
+                    }
+                }
+            } else {
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    remedios.forEach { remedio ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            elevation = CardDefaults.cardElevation(4.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxSize(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+
+                                Column {
+                                    Text(
+                                        text = remedio.nome,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 18.sp,
+                                        color = Color(0xFF2E7D32)
+                                    )
+                                    Text(
+                                        text = remedio.dosagem,
+                                        fontSize = 14.sp,
+                                        color = Color.Gray
+                                    )
+                                }
+
+
+                                Box(
+                                    modifier = Modifier
+                                        .background(Color(0xFF88e788).copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text(
+                                        text = remedio.frequencia,
+                                        fontSize = 12.sp,
+                                        color = Color(0xFF2E7D32),
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    // Espaço extra no final para não ficar colado na barra inferior
+                    Spacer(modifier = Modifier.height(80.dp))
+                }
             }
         }
     }
 }
 
-sealed class Screen(val route: String, val icon: ImageVector) {
-    object Home : Screen("Home", Icons.Default.Home)
-    object Remedios : Screen("Remédios", Icons.Default.Medication)
-    object Calendario : Screen("Calendário", Icons.Default.DateRange)
-    object Ajustes : Screen("Ajustes", Icons.Default.Settings)
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    IcareTheme {
-        HomeScreen(navController = rememberNavController(), userViewModel = UserViewModel())
-    }
+sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
+    object Home : Screen("home_tab", "Home", Icons.Default.Home)
+    object Remedios : Screen("remedios_tab", "Remédios", Icons.Default.Medication)
+    object Calendario : Screen("calendario_tab", "Calendário", Icons.Default.DateRange)
+    object Ajustes : Screen("ajustes_tab", "Ajustes", Icons.Default.Settings)
 }

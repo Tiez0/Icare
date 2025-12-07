@@ -1,123 +1,148 @@
 package com.example.icare.view
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import android.widget.Toast
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.icare.ui.theme.IcareTheme
+import com.example.icare.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SOSConfigScreen(navController: NavController) {
+fun SOSConfigScreen(navController: NavController, userViewModel: UserViewModel) {
     var nome by remember { mutableStateOf("") }
-    var sobrenome by remember { mutableStateOf("") }
-    var countryCode by remember { mutableStateOf("+55") }
-    var isCountryExpanded by remember { mutableStateOf(false) }
-    var ddd by remember { mutableStateOf("") }
     var telefone by remember { mutableStateOf("") }
-    var endereco by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        OutlinedTextField(
-            value = nome,
-            onValueChange = { nome = it },
-            label = { Text("Nome") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = sobrenome,
-            onValueChange = { sobrenome = it },
-            label = { Text("Sobrenome") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(modifier = Modifier.fillMaxWidth()) {
-            ExposedDropdownMenuBox(
-                expanded = isCountryExpanded,
-                onExpandedChange = { isCountryExpanded = it },
-                modifier = Modifier.weight(0.3f)
-            ) {
-                OutlinedTextField(
-                    value = countryCode,
-                    onValueChange = {},
-                    readOnly = true,
-                    modifier = Modifier.menuAnchor(),
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isCountryExpanded) }
-                )
-                ExposedDropdownMenu(expanded = isCountryExpanded, onDismissRequest = { isCountryExpanded = false }) {
-                    DropdownMenuItem(text = { Text("+55 (Brasil)") }, onClick = {
-                        countryCode = "+55"
-                        isCountryExpanded = false
-                    })
-                }
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            OutlinedTextField(
-                value = ddd,
-                onValueChange = { ddd = it },
-                label = { Text("DDD") },
-                modifier = Modifier.weight(0.2f),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            OutlinedTextField(
-                value = telefone,
-                onValueChange = { telefone = it },
-                label = { Text("Telefone") },
-                modifier = Modifier.weight(0.5f),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = endereco,
-            onValueChange = { endereco = it },
-            label = { Text("Endereço") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Button(onClick = { /* TODO: Save contact logic */ }, modifier = Modifier.fillMaxWidth()) {
-            Text("Salvar Contato")
+    // Carrega dados se já existirem (para editar)
+    val contatoSalvo by userViewModel.contatoSOS.collectAsState()
+    LaunchedEffect(contatoSalvo) {
+        contatoSalvo?.let {
+            nome = it.nome
+            telefone = it.telefone
         }
     }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun SOSConfigScreenPreview() {
-    IcareTheme {
-        SOSConfigScreen(navController = rememberNavController())
+    val context = LocalContext.current
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Configurar Emergência") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF88e788),
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                )
+            )
+        }
+    ) { padding ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Fundo Verde Curvo (Padrão do App)
+            Canvas(modifier = Modifier.fillMaxWidth().height(200.dp)) {
+                val curveHeight = 50.dp.toPx()
+                val path = Path().apply {
+                    moveTo(0f, 0f); lineTo(size.width, 0f); lineTo(size.width, size.height - curveHeight)
+                    quadraticBezierTo(size.width / 2, size.height, 0f, size.height - curveHeight); close()
+                }
+                drawPath(path, color = Color(0xFF88e788))
+            }
+
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Ícone Grande
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    modifier = Modifier.size(80.dp),
+                    tint = Color.White
+                )
+
+                Spacer(modifier = Modifier.height(80.dp))
+
+                Text(
+                    text = "Quem devemos contatar?",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF2E7D32)
+                )
+                Text(
+                    text = "Ao apertar o botão SOS, simularemos uma ligação para este número.",
+                    color = Color.Gray,
+                    fontSize = 14.sp
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                OutlinedTextField(
+                    value = nome,
+                    onValueChange = { nome = it },
+                    label = { Text("Nome do Contato (ex: Mãe)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = { Icon(Icons.Default.Person, null) },
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = telefone,
+                    onValueChange = { telefone = it },
+                    label = { Text("Telefone (ex: 190)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    leadingIcon = { Icon(Icons.Default.Phone, null) },
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = {
+                        if (nome.isNotBlank() && telefone.isNotBlank()) {
+                            userViewModel.salvarContatoSOS(nome, telefone)
+                            Toast.makeText(context, "Contato de Emergência Salvo!", Toast.LENGTH_SHORT).show()
+                            navController.popBackStack()
+                        } else {
+                            Toast.makeText(context, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF88e788))
+                ) {
+                    Text("Salvar Configuração", fontSize = 18.sp)
+                }
+            }
+        }
     }
 }

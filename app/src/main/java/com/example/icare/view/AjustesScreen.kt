@@ -164,7 +164,7 @@ fun AjustesScreen(navController: NavController, userViewModel: UserViewModel) {
         if (username != null) {
             Button(
                 onClick = {
-                    userViewModel.clearUsername()
+                    userViewModel.logout()
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
                     }

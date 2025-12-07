@@ -14,6 +14,7 @@ import com.example.icare.ui.theme.IcareTheme
 import com.example.icare.view.HomeScreen
 import com.example.icare.view.LoginScreen
 import com.example.icare.view.RegistrationScreen
+import com.example.icare.view.SOSCallScreen
 import com.example.icare.view.SOSConfigScreen
 import com.example.icare.viewmodel.UserViewModel
 
@@ -44,15 +45,14 @@ fun AppNavigation() {
             HomeScreen(navController = navController, userViewModel = userViewModel)
         }
         composable("sos_config") {
-            SOSConfigScreen(navController = navController)
+            SOSConfigScreen(navController = navController, userViewModel = userViewModel)
+        }
+        composable("sos_config") {
+            SOSConfigScreen(navController = navController, userViewModel = userViewModel)
+        }
+        composable("sos_call") {
+            SOSCallScreen(navController = navController, userViewModel = userViewModel)
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    IcareTheme {
-        AppNavigation()
-    }
-}
