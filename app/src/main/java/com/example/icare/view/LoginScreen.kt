@@ -3,32 +3,15 @@ package com.example.icare.view
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,100 +33,125 @@ import com.example.icare.viewmodel.UserViewModel
 
 @Composable
 fun LoginScreen(navController: NavController, userViewModel: UserViewModel) {
-    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // The green curved background
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp) // The total height of the colored area
-        ) {
+
+    val loginStatus by userViewModel.loginStatus.collectAsState()
+    val mensagemErro by userViewModel.mensagemErro.collectAsState()
+
+
+    if (loginStatus == true) {
+        userViewModel.resetLoginStatus()
+        navController.navigate("home") {
+            popUpTo("login") { inclusive = true }
+        }
+    }
+
+
+    LaunchedEffect(loginStatus, mensagemErro) {
+        if (loginStatus != null || mensagemErro != null) {
+            isLoading = false
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        Canvas(modifier = Modifier.fillMaxWidth().height(300.dp)) {
             val curveHeight = 50.dp.toPx()
             val path = Path().apply {
                 moveTo(0f, 0f)
                 lineTo(size.width, 0f)
                 lineTo(size.width, size.height - curveHeight)
-                quadraticBezierTo(
-                    x1 = size.width / 2,
-                    y1 = size.height,
-                    x2 = 0f,
-                    y2 = size.height - curveHeight
-                )
+                quadraticBezierTo(size.width / 2, size.height, 0f, size.height - curveHeight)
                 close()
             }
             drawPath(path, color = Color(0xFF88e788))
         }
 
-        // The content of the screen
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(60.dp)) // Adjust space to position logo inside the curve
+            Spacer(modifier = Modifier.height(60.dp))
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "iCare Logo",
                 modifier = Modifier.size(170.dp)
             )
-            Spacer(modifier = Modifier.height(100.dp)) // Pushed the fields down
+            Spacer(modifier = Modifier.height(100.dp))
+
+            // Campo Email
             OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text("Login") },
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(Icons.Default.Person, contentDescription = "Person Icon", tint = Color.Black)
-                },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                leadingIcon = { Icon(Icons.Default.Person, null, tint = Color.Black) },
+                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold),
+                singleLine = true
             )
             Spacer(modifier = Modifier.height(8.dp))
+
+            // Campo Senha
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Senha") },
                 modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = "Password Icon", tint = Color.Black)
-                },
+                leadingIcon = { Icon(Icons.Default.Lock, null, tint = Color.Black) },
                 textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                singleLine = true,
                 trailingIcon = {
-                    val image = if (passwordVisible)
-                        Icons.Filled.Visibility
-                    else Icons.Filled.VisibilityOff
-
+                    val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = image, "toggle password visibility", tint = Color.Black)
+                        Icon(image, null, tint = Color.Black)
                     }
                 }
             )
             Spacer(modifier = Modifier.height(24.dp))
+
+            // Botão Entrar
             Button(
                 onClick = {
-                    userViewModel.setUsername(username)
-                    navController.navigate("home")
+                    isLoading = true
+                    // Chama o login no servidor
+                    userViewModel.fazerLogin(email, password)
                 },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF88e788))
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF88e788)),
+                enabled = !isLoading && email.isNotBlank() && password.isNotBlank()
             ) {
-                Text("Entrar")
+                if (isLoading) Text("Entrando...") else Text("Entrar")
             }
+
+
+            if (loginStatus == false && mensagemErro != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = mensagemErro ?: "Erro desconhecido",
+                    color = Color.Red,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
+
+
             OutlinedButton(
-                onClick = { navController.navigate("registration") },
+                onClick = {
+                    userViewModel.resetLoginStatus()
+                    navController.navigate("registration")
+                },
                 modifier = Modifier.fillMaxWidth(),
                 border = BorderStroke(1.dp, Color(0xFF88e788)),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF88e788))
             ) {
-                Text("novo acesso")
+                Text("Cadastre-se")
             }
         }
     }

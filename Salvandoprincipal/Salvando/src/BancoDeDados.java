@@ -6,6 +6,7 @@ import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 
 public class BancoDeDados {
+    // String de conexão (Mantenha a sua senha correta aqui!)
     private static final String CONNECTION_STRING = "mongodb+srv://flaviodario2017_db_user:Senha1@cluster0.3jthsk8.mongodb.net/?appName=Cluster0";
     private static final String DB_NAME = "iCare";
 
@@ -33,6 +34,20 @@ public class BancoDeDados {
 
     public boolean validarLogin(String email, String senha) {
         Document query = new Document("email", email).append("senha", senha);
+        Document found = this.usuarios.find(query).first();
+        return found != null;
+    }
+
+    // --- NOVOS MÉTODOS DE VERIFICAÇÃO ---
+
+    public boolean isEmailEmUso(String email) {
+        Document query = new Document("email", email);
+        Document found = this.usuarios.find(query).first();
+        return found != null;
+    }
+
+    public boolean isCpfEmUso(String cpf) {
+        Document query = new Document("cpf", cpf);
         Document found = this.usuarios.find(query).first();
         return found != null;
     }

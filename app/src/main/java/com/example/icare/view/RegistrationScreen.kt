@@ -1,9 +1,7 @@
 package com.example.icare.view
 
-import android.app.DatePickerDialog
-import android.widget.DatePicker
+import android.widget.Toast
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -30,12 +28,10 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.icare.ui.theme.IcareTheme
 import com.example.icare.viewmodel.UserViewModel
-import java.util.Calendar
 
 @Composable
 fun RegistrationScreen(navController: NavController, userViewModel: UserViewModel) {
     var name by remember { mutableStateOf("") }
-    var dob by remember { mutableStateOf("") }
     var cpf by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -43,46 +39,32 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
-    // Observa o resultado E a mensagem de erro vinda do servidor
     val cadastroStatus by userViewModel.cadastroStatus.collectAsState()
     val mensagemErro by userViewModel.mensagemErro.collectAsState()
 
     val context = LocalContext.current
-    val calendar = Calendar.getInstance()
 
-    // Lógica de navegação automática em caso de sucesso
     if (cadastroStatus == true) {
+        Toast.makeText(context, mensagemErro ?: "Conta criada com sucesso!", Toast.LENGTH_LONG).show()
+
         userViewModel.resetCadastroStatus()
-        navController.navigate("home") {
-            popUpTo("login") { inclusive = true }
-        }
+
+        navController.popBackStack()
     }
 
-    // Validações locais (Frontend)
     val isEmailValid = email.isNotBlank() && email.contains("@")
     val emailError = email.isNotBlank() && !email.contains("@")
     val passwordMismatch = password.isNotBlank() && confirmPassword.isNotBlank() && password != confirmPassword
 
+
     val isFormValid = name.isNotBlank() &&
-            dob.isNotBlank() &&
             cpf.length == 11 &&
             isEmailValid &&
             password.isNotBlank() &&
             confirmPassword == password &&
             !passwordMismatch
 
-    val datePickerDialog = DatePickerDialog(
-        context,
-        { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            dob = "$dayOfMonth/${month + 1}/$year"
-        },
-        calendar.get(Calendar.YEAR),
-        calendar.get(Calendar.MONTH),
-        calendar.get(Calendar.DAY_OF_MONTH)
-    )
-
     Box(modifier = Modifier.fillMaxSize()) {
-        // Fundo Verde Ondulado
         Canvas(modifier = Modifier.fillMaxWidth().height(300.dp)) {
             val curveHeight = 50.dp.toPx()
             val path = Path().apply {
@@ -106,7 +88,7 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
             Text("Criar Nova Conta", fontSize = 32.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
             Spacer(modifier = Modifier.height(135.dp))
 
-            // Campos de Texto
+            // Campo Nome
             OutlinedTextField(
                 value = name, onValueChange = { name = it },
                 label = { Text("Nome Completo") }, modifier = Modifier.fillMaxWidth(), singleLine = true,
@@ -114,20 +96,9 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = dob, onValueChange = { dob = it },
-                label = { Text("Data de Nascimento") }, modifier = Modifier.fillMaxWidth().clickable { datePickerDialog.show() },
-                enabled = false,
-                colors = OutlinedTextFieldDefaults.colors(
-                    disabledTextColor = LocalContentColor.current.copy(alpha = 1f),
-                    disabledBorderColor = MaterialTheme.colorScheme.outline,
-                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledLeadingIconColor = Color.Black
-                ),
-                leadingIcon = { Icon(Icons.Default.DateRange, null) }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
 
+
+            // Campo CPF
             OutlinedTextField(
                 value = cpf,
                 onValueChange = { if (it.length <= 11 && it.all { c -> c.isDigit() }) cpf = it },
@@ -137,6 +108,7 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
             )
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Campo Email
             OutlinedTextField(
                 value = email, onValueChange = { email = it },
                 label = { Text("Email") }, modifier = Modifier.fillMaxWidth(), singleLine = true,
@@ -145,6 +117,7 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
             )
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Campo Senha
             OutlinedTextField(
                 value = password, onValueChange = { password = it },
                 label = { Text("Senha") }, modifier = Modifier.fillMaxWidth(), singleLine = true,
@@ -160,6 +133,7 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
             )
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Campo Confirmar Senha
             OutlinedTextField(
                 value = confirmPassword, onValueChange = { confirmPassword = it },
                 label = { Text("Confirmar Senha") }, modifier = Modifier.fillMaxWidth(), singleLine = true,
@@ -177,9 +151,10 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botão de Cadastro
+            // Botão Cadastrar
             Button(
                 onClick = {
+
                     userViewModel.cadastrarUsuario(name, cpf, email, password)
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -189,7 +164,6 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
                 Text("Cadastrar")
             }
 
-            // MENSAGEM DE ERRO (Vinda do Servidor)
             if (cadastroStatus == false && mensagemErro != null) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.icare.model.PedidoDeCadastro
 import com.example.icare.model.Resultado
+import com.example.icare.model.PedidoDeLogin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +23,10 @@ class UserViewModel : ViewModel() {
     private val _cadastroStatus = MutableStateFlow<Boolean?>(null)
     val cadastroStatus: StateFlow<Boolean?> = _cadastroStatus.asStateFlow()
 
-    // NOVO: Estado para guardar a mensagem de erro específica (ex: "CPF Inválido")
+    private val _loginStatus = MutableStateFlow<Boolean?>(null)
+    val loginStatus: StateFlow<Boolean?> = _loginStatus.asStateFlow()
+
+
     private val _mensagemErro = MutableStateFlow<String?>(null)
     val mensagemErro: StateFlow<String?> = _mensagemErro.asStateFlow()
 
@@ -38,13 +42,11 @@ class UserViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             var socket: Socket? = null
             try {
-                // Limpa mensagem anterior
+
                 _mensagemErro.value = null
 
-                // --- CONFIGURAÇÃO DO IP ---
-                // Se usar Emulador: "10.0.2.2"
-                // Se usar Celular Físico: "192.168.X.X" (Seu IP do computador)
-                val ipServidor = "10.0.2.2" // <--- ATUALIZE AQUI SE PRECISAR
+
+                val ipServidor = "10.0.2.2"
 
                 socket = Socket()
                 socket.connect(InetSocketAddress(ipServidor, 3000), 5000) // Timeout de 5s
@@ -62,7 +64,7 @@ class UserViewModel : ViewModel() {
                 // Recebe a resposta do servidor
                 val resposta = input.readObject() as Resultado
 
-                // Atualiza a mensagem na tela com o que veio do servidor
+
                 _mensagemErro.value = resposta.mensagem
 
                 if (resposta.isValido) {
@@ -70,14 +72,14 @@ class UserViewModel : ViewModel() {
                     _username.value = nome
                     _cadastroStatus.value = true
                 } else {
-                    // Falha (O motivo estará em _mensagemErro)
+
                     _cadastroStatus.value = false
                 }
 
             } catch (e: Exception) {
                 e.printStackTrace()
                 _cadastroStatus.value = false
-                // Mensagem amigável se der erro de conexão
+
                 _mensagemErro.value = "Falha na conexão: Verifique se o servidor está rodando."
             } finally {
                 try { socket?.close() } catch (e: Exception) {}
@@ -85,9 +87,59 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    // Reseta o status para não exibir erro/sucesso repetidamente ao voltar pra tela
+
     fun resetCadastroStatus() {
         _cadastroStatus.value = null
+        _mensagemErro.value = null
+    }
+    fun fazerLogin(email: String, senha: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            var socket: Socket? = null
+            try {
+
+                _mensagemErro.value = null
+                _loginStatus.value = null
+
+
+                val ipServidor = "10.0.2.2"
+
+                socket = Socket()
+                socket.connect(InetSocketAddress(ipServidor, 3000), 5000)
+
+                val output = ObjectOutputStream(socket.getOutputStream())
+                val input = ObjectInputStream(socket.getInputStream())
+
+                // Envia o PedidoDeLogin
+                val pedido = PedidoDeLogin(email, senha)
+                output.writeObject(pedido)
+                output.flush()
+
+                // Recebe o Resultado
+                val resposta = input.readObject() as Resultado
+
+                // Atualiza a mensagem na tela (Erro ou Sucesso)
+                _mensagemErro.value = resposta.mensagem
+
+                if (resposta.isValido) {
+
+                    _username.value = email
+                    _loginStatus.value = true
+                } else {
+                    _loginStatus.value = false
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _loginStatus.value = false
+                _mensagemErro.value = "Erro de conexão: Verifique o servidor."
+            } finally {
+                try { socket?.close() } catch (e: Exception) {}
+            }
+        }
+    }
+
+    fun resetLoginStatus() {
+        _loginStatus.value = null
         _mensagemErro.value = null
     }
 }

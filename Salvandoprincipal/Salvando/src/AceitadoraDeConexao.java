@@ -29,11 +29,11 @@ public class AceitadoraDeConexao extends Thread {
             SupervisoraDeConexao supervisoraDeConexao = null;
             try {
                 supervisoraDeConexao = new SupervisoraDeConexao(conexao, usuarios);
-                // O .start() FICA DENTRO DO TRY! Se falhar a criação, não tenta iniciar.
+
                 supervisoraDeConexao.start();
-            } catch (Throwable erro) { // Use Throwable para pegar tudo
+            } catch (Throwable erro) {
                 System.err.println("ERRO NO SERVIDOR:");
-                erro.printStackTrace(); // <--- Isso é essencial para você ver o erro do Banco!
+                erro.printStackTrace();
                 try { conexao.close(); } catch (Exception e) {}
             }
         }
