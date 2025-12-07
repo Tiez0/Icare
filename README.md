@@ -26,7 +26,7 @@ Pedro Tiezo Sales Shimizu — RA 24005158
 
 
 
-**Objetivo do Sistema****
+**Objetivo do Sistema**
 
 Criar um organizador digital de medicamentos, que seja:
 
@@ -79,6 +79,7 @@ Armazenado localmente:
 Medicamentos 
 
 Agendamentos 
+
 
 
 
