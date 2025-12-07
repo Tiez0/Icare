@@ -1,3 +1,4 @@
+import com.example.icare.model.*;
 import java.net.*;
 
 public class TratadoraDeComunicadoDeDesligamento extends Thread {

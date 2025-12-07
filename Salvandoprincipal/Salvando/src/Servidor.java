@@ -1,8 +1,5 @@
-import com.example.icare.model.*;
-import com.example.icare.model.ComunicadoDeDesligamento;
-import java.io.*;
-import java.net.*;
 import java.util.*;
+import com.example.icare.model.*; // Importante para reconhecer o ComunicadoDeDesligamento
 
 public class Servidor {
     public static String PORTA_PADRAO = "3000";
@@ -29,8 +26,8 @@ public class Servidor {
         }
 
         for (;;) {
-            System.out.println("O servidor esta ativo! Para desativa-lo,");
-            System.out.println("use o comando \"desativar\"\n");
+            System.out.println("O servidor esta ativo! Porta: " + porta);
+            System.out.println("Para desativa-lo, use o comando \"desativar\"\n");
             System.out.print(">");
 
             String comando = null;

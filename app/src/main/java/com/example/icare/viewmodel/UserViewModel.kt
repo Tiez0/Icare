@@ -34,8 +34,8 @@ class UserViewModel : ViewModel() {
             var socket: Socket? = null
             try {
                 // 10.0.2.2 é o IP do localhost do seu computador visto de dentro do emulador Android
-                // Se usar telemóvel físico, troque pelo IP da sua rede (ex: 192.168.1.15)
-                socket = Socket("192.168.1.104", 3000)
+                // IP: 192.168.1.226
+                socket = Socket("192.168.1.226", 3000)
 
                 val output = ObjectOutputStream(socket.getOutputStream())
                 val input = ObjectInputStream(socket.getInputStream())
@@ -64,6 +64,7 @@ class UserViewModel : ViewModel() {
                 e.printStackTrace()
                 _cadastroStatus.value = false
                 println("Android: Erro de conexão: ${e.message}")
+
             } finally {
                 socket?.close()
             }

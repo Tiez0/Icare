@@ -1,4 +1,6 @@
-import com.example.icare.model.*;
+package com.example.icare.model;
+
+
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.Semaphore;

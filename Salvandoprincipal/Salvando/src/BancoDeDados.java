@@ -27,7 +27,7 @@ public class BancoDeDados {
         Document doc = new Document("nome", nome)
                 .append("cpf", cpf)
                 .append("email", email)
-                .append("senha", senha); // Nota: Em produção, use hash na senha!
+                .append("senha", senha);
         this.usuarios.insertOne(doc);
     }
 

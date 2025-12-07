@@ -1,5 +1,5 @@
-import com.example.icare.model.*;
-import com.example.icare.model.Comunicado;
+package com.example.icare.model;
+
 
 import java.io.*;
 import java.net.*;

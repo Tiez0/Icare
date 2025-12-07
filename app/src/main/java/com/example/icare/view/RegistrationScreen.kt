@@ -268,7 +268,7 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF88e788)),
-                enabled = isFormValid // Botão habilitado apenas se o formulário estiver válido
+                enabled = isFormValid
             ) {
                 Text("Cadastrar")
             }

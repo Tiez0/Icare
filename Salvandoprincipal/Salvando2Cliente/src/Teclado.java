@@ -1,3 +1,4 @@
+import com.example.icare.model.*;
 import java.io.*;
 
 public class Teclado {
