@@ -60,38 +60,49 @@ public class SupervisoraDeConexao extends Thread {
 
                 if (comunicado == null) return;
 
-                    // --- 1. TRATAMENTO DO CADASTRO ---
+                    // --- 1. TRATAMENTO DO CADASTRO (COM VALIDAÇÃO E MENSAGENS) ---
                 else if (comunicado instanceof PedidoDeCadastro) {
                     PedidoDeCadastro pedido = (PedidoDeCadastro) comunicado;
                     System.out.println("Recebido pedido de cadastro para: " + pedido.getNome());
 
-                    try {
-                        if (this.banco == null) {
-                            System.err.println("ERRO: A variável 'banco' é nula. A conexão com o Mongo falhou na inicialização?");
-                            this.usuario.receba(new Resultado(false));
-                        } else {
-                            this.banco.salvarUsuario(
-                                    pedido.getNome(),
-                                    pedido.getCpf(),
-                                    pedido.getEmail(),
-                                    pedido.getSenha()
-                            );
-                            System.out.println("Sucesso: Usuário salvo no MongoDB!");
-                            this.usuario.receba(new Resultado(true));
+                    // A. Valida CPF antes de tudo
+                    if (!validarCPF(pedido.getCpf())) {
+                        System.out.println("Cadastro Recusado: CPF Inválido (" + pedido.getCpf() + ")");
+                        // Envia False + Motivo
+                        this.usuario.receba(new Resultado(false, "CPF Inválido!"));
+                    }
+                    // B. Se CPF válido, tenta salvar
+                    else {
+                        try {
+                            if (this.banco == null) {
+                                System.err.println("ERRO: Banco não conectado.");
+                                this.usuario.receba(new Resultado(false, "Erro Interno: Banco Offline"));
+                            } else {
+                                // Aqui você pode adicionar verificação se o email já existe, se quiser
+                                this.banco.salvarUsuario(
+                                        pedido.getNome(),
+                                        pedido.getCpf(),
+                                        pedido.getEmail(),
+                                        pedido.getSenha()
+                                );
+                                System.out.println("Sucesso: Usuário salvo no MongoDB!");
+                                this.usuario.receba(new Resultado(true, "Cadastro realizado com sucesso!"));
+                            }
+                        } catch (Exception e) {
+                            System.err.println("ERRO AO SALVAR:");
+                            e.printStackTrace();
+                            this.usuario.receba(new Resultado(false, "Erro no Banco: " + e.getMessage()));
                         }
-                    } catch (Exception e) {
-                        System.err.println("ERRO AO TENTAR SALVAR NO MONGODB:");
-                        // Este printStackTrace é o mais importante para você descobrir o erro real!
-                        e.printStackTrace();
-                        this.usuario.receba(new Resultado(false));
                     }
                 }
 
-                // --- 2. TRATAMENTO DA VALIDAÇÃO DE CPF ---
+                // --- 2. TRATAMENTO DA VALIDAÇÃO DE CPF (CONSULTA SIMPLES) ---
                 else if (comunicado instanceof PedidoDeValidacao) {
                     PedidoDeValidacao pedido = (PedidoDeValidacao) comunicado;
                     boolean ehValido = validarCPF(pedido.getCpf());
-                    this.usuario.receba(new Resultado(ehValido));
+
+                    String msg = ehValido ? "CPF Válido" : "CPF Inválido";
+                    this.usuario.receba(new Resultado(ehValido, msg));
                 }
 
                 // --- 3. TRATAMENTO DE SAÍDA ---

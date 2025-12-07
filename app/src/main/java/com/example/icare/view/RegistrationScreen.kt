@@ -4,39 +4,15 @@ import android.app.DatePickerDialog
 import android.widget.DatePicker
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -67,36 +43,33 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
-    // Observa o resultado do cadastro vindo do servidor
+    // Observa o resultado E a mensagem de erro vinda do servidor
     val cadastroStatus by userViewModel.cadastroStatus.collectAsState()
+    val mensagemErro by userViewModel.mensagemErro.collectAsState()
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
     // Lógica de navegação automática em caso de sucesso
     if (cadastroStatus == true) {
-        // Reseta o status para evitar loops de navegação se o usuário voltar
         userViewModel.resetCadastroStatus()
-        // Navega para a tela Home e remove o login da pilha (para não voltar com o botão 'voltar')
         navController.navigate("home") {
             popUpTo("login") { inclusive = true }
         }
     }
 
-    // Lógica de validação do email
+    // Validações locais (Frontend)
     val isEmailValid = email.isNotBlank() && email.contains("@")
     val emailError = email.isNotBlank() && !email.contains("@")
+    val passwordMismatch = password.isNotBlank() && confirmPassword.isNotBlank() && password != confirmPassword
 
-    // Lógica para validação do formulário
     val isFormValid = name.isNotBlank() &&
             dob.isNotBlank() &&
             cpf.length == 11 &&
             isEmailValid &&
             password.isNotBlank() &&
-            confirmPassword == password
-
-    // Lógica para erro de confirmação de senha
-    val passwordMismatch = password.isNotBlank() && confirmPassword.isNotBlank() && password != confirmPassword
+            confirmPassword == password &&
+            !passwordMismatch
 
     val datePickerDialog = DatePickerDialog(
         context,
@@ -109,22 +82,14 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-        ) {
+        // Fundo Verde Ondulado
+        Canvas(modifier = Modifier.fillMaxWidth().height(300.dp)) {
             val curveHeight = 50.dp.toPx()
             val path = Path().apply {
                 moveTo(0f, 0f)
                 lineTo(size.width, 0f)
                 lineTo(size.width, size.height - curveHeight)
-                quadraticBezierTo(
-                    x1 = size.width / 2,
-                    y1 = size.height,
-                    x2 = 0f,
-                    y2 = size.height - curveHeight
-                )
+                quadraticBezierTo(size.width / 2, size.height, 0f, size.height - curveHeight)
                 close()
             }
             drawPath(path, color = Color(0xFF88e788))
@@ -141,129 +106,80 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
             Text("Criar Nova Conta", fontSize = 32.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
             Spacer(modifier = Modifier.height(135.dp))
 
+            // Campos de Texto
             OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Nome Completo") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                leadingIcon = {
-                    Icon(Icons.Default.Person, contentDescription = "Person Icon", tint = Color.Black)
-                },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                value = name, onValueChange = { name = it },
+                label = { Text("Nome Completo") }, modifier = Modifier.fillMaxWidth(), singleLine = true,
+                leadingIcon = { Icon(Icons.Default.Person, null, tint = Color.Black) }
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = dob,
-                onValueChange = { dob = it },
-                label = { Text("Data de Nascimento") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { datePickerDialog.show() },
+                value = dob, onValueChange = { dob = it },
+                label = { Text("Data de Nascimento") }, modifier = Modifier.fillMaxWidth().clickable { datePickerDialog.show() },
                 enabled = false,
                 colors = OutlinedTextFieldDefaults.colors(
-                    disabledTextColor = LocalContentColor.current.copy(LocalContentColor.current.alpha),
+                    disabledTextColor = LocalContentColor.current.copy(alpha = 1f),
                     disabledBorderColor = MaterialTheme.colorScheme.outline,
                     disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     disabledLeadingIconColor = Color.Black
                 ),
-                leadingIcon = {
-                    Icon(Icons.Default.DateRange, contentDescription = "Select date")
-                },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                leadingIcon = { Icon(Icons.Default.DateRange, null) }
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
                 value = cpf,
-                onValueChange = { newCpf ->
-                    if (newCpf.length <= 11 && newCpf.all { it.isDigit() }) {
-                        cpf = newCpf
-                    }
-                },
-                label = { Text("CPF") },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(Icons.Default.Person, contentDescription = "CPF Icon", tint = Color.Black)
-                },
+                onValueChange = { if (it.length <= 11 && it.all { c -> c.isDigit() }) cpf = it },
+                label = { Text("CPF") }, modifier = Modifier.fillMaxWidth(), singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                leadingIcon = { Icon(Icons.Default.Person, null, tint = Color.Black) }
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(Icons.Default.Email, contentDescription = "Email Icon", tint = Color.Black)
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                singleLine = true,
+                value = email, onValueChange = { email = it },
+                label = { Text("Email") }, modifier = Modifier.fillMaxWidth(), singleLine = true,
                 isError = emailError,
-                supportingText = {
-                    if (emailError) {
-                        Text("Email inválido", color = MaterialTheme.colorScheme.error)
-                    }
-                },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                leadingIcon = { Icon(Icons.Default.Email, null, tint = Color.Black) }
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Senha") },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = "Password Icon", tint = Color.Black)
-                },
+                value = password, onValueChange = { password = it },
+                label = { Text("Senha") }, modifier = Modifier.fillMaxWidth(), singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true,
+                leadingIcon = { Icon(Icons.Default.Lock, null, tint = Color.Black) },
                 trailingIcon = {
                     val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = image, "toggle password visibility", tint = Color.Black)
+                        Icon(image, null, tint = Color.Black)
                     }
-                },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                }
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                label = { Text("Confirmar Senha") },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = "Password Icon", tint = Color.Black)
-                },
+                value = confirmPassword, onValueChange = { confirmPassword = it },
+                label = { Text("Confirmar Senha") }, modifier = Modifier.fillMaxWidth(), singleLine = true,
                 visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true,
+                leadingIcon = { Icon(Icons.Default.Lock, null, tint = Color.Black) },
                 trailingIcon = {
                     val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                        Icon(imageVector = image, "toggle password visibility", tint = Color.Black)
+                        Icon(image, null, tint = Color.Black)
                     }
                 },
                 isError = passwordMismatch,
-                supportingText = {
-                    if (passwordMismatch) {
-                        Text("As senhas não correspondem", color = MaterialTheme.colorScheme.error)
-                    }
-                },
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                supportingText = { if (passwordMismatch) Text("As senhas não correspondem", color = MaterialTheme.colorScheme.error) }
             )
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Botão de Cadastro
             Button(
                 onClick = {
-                    // Chama a função que conecta ao servidor Java
                     userViewModel.cadastrarUsuario(name, cpf, email, password)
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -273,13 +189,13 @@ fun RegistrationScreen(navController: NavController, userViewModel: UserViewMode
                 Text("Cadastrar")
             }
 
-            // Exibe mensagem de erro se o servidor responder com falha
-            if (cadastroStatus == false) {
-                Spacer(modifier = Modifier.height(8.dp))
+            // MENSAGEM DE ERRO (Vinda do Servidor)
+            if (cadastroStatus == false && mensagemErro != null) {
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Erro ao realizar cadastro. Verifique a conexão.",
+                    text = mensagemErro ?: "Erro desconhecido",
                     color = Color.Red,
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
