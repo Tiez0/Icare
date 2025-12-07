@@ -1,35 +1,34 @@
+**Projeto Integrador IV Aplicativo de gerenciamento e organização de medicamentos**
 
 
-Projeto Integrador IV
-Aplicativo de gerenciamento e organização de medicamentos para idosos
+ **Sobre o Projeto**
 
-📱 Sobre o Projeto
-
-O iCare é um aplicativo desenvolvido para auxiliar idosos e seus cuidadores no controle e organização de medicamentos.
-Ele permite cadastrar remédios, horários, notificações e informações importantes, garantindo mais segurança e autonomia no tratamento.
-
+O iCare é um aplicativo desenvolvido para auxiliar no controle e organização de medicamentos. Ele permite cadastrar remédios, horários e informações importantes, garantindo mais segurança e autonomia no tratamento.
 
 Aplicativo mobile desenvolvido em Kotlin utilizando Jetpack Compose
 
 Servidor em Java, responsável pela lógica de autenticação, controle de usuários e comunicação com o app
 
-Servidor de banco de dados MongoDB, para armazenamento de perfis, prescrições e registros de medicamentos
+Banco de dados MongoDB, para armazenamento de cadastros.
 
-👥 Integrantes
+
+ **Integrantes**
 
 Flavio Augusto Dario de Moraes — RA 24008418
 
 Gabriel Henrique Pera Coelho — RA 24012508
 
-Henrique Monteiro da Silva — 
+Henrique Monteiro da Silva — (procurado vivo ou morto)
 
 Narayan Fonseca Jakowatz — RA 24018023
 
 Pedro Tiezo Sales Shimizu — RA 24005158
 
-🎯 Objetivo do Sistema
 
-Criar um organizador digital de medicamentos para idosos, que seja:
+
+**Objetivo do Sistema**
+
+Criar um organizador digital de medicamentos, que seja:
 
 Simples de usar
 
@@ -37,27 +36,29 @@ Acessível
 
 Seguro
 
-Integrado com notificações e lembretes
+Integrado com notificações e lembretes (FUTURAMENTE)
 
-O app facilita o acompanhamento de tratamentos e evita esquecimentos, trazendo mais qualidade de vida e autonomia.
+O app facilita o acompanhamento de tratamentos, trazendo mais qualidade de vida e autonomia.
 
-🏗️ Arquitetura do Projeto
-1. Aplicativo Android (Kotlin + Jetpack Compose)
 
-Interface moderna e responsiva usando Compose
+
+**Arquitetura do Projeto**
+
+Aplicativo Android (Kotlin + Jetpack Compose)
 
 Tela de cadastro e login
 
 Cadastro de medicamentos
 
-Lembretes e notificações via Android AlarmManager / WorkManager
+Botão SOS
 
-Sincronização com servidor Java
+Tela de Ajustes
+
+Servidor Java que valida CPF, salva no Banco de Dados MongoDB verifica o cadastro e autentica o login.
 
 Perfil do usuário
 
-2. Servidor Java
-
+Servidor Java
 API REST desenvolvida em Java
 
 Controle de autenticação e autorização
@@ -66,22 +67,23 @@ Endpoints para CRUD de usuários e medicamentos
 
 Comunicação com o MongoDB
 
-3. Banco de Dados MongoDB
-
+Banco de Dados MongoDB
 Armazena:
 
-Perfis de usuários
+Login
 
-Lista de medicamentos
+Cadastro
 
-Agendamentos
+Armazenado localmente:
 
-Histórico de uso
+Medicamentos 
 
-Estruturado para alto desempenho e flexibilidade
+Agendamentos 
 
-🚀 Tecnologias Utilizadas
-Mobile
+
+
+
+**Tecnologias Utilizadas**
 
 Kotlin
 
@@ -93,16 +95,13 @@ Coroutines / Flow
 
 Material Design 3
 
-Backend
+Backend - Java
 
-Java
-
-Spring Boot (ou tecnologia equivalente escolhida pelo grupo)
-
-JWT para autenticação
+WebSocket
 
 MongoDB Driver
 
 Banco de Dados
 
 MongoDB Community Server
+
