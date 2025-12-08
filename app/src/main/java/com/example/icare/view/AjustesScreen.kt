@@ -36,16 +36,16 @@ fun AjustesScreen(navController: NavController, userViewModel: UserViewModel) {
     val username by userViewModel.username.collectAsState()
     val context = LocalContext.current
 
-    // Estado para controlar a visibilidade do Popup "Sobre"
+
     var showAboutDialog by remember { mutableStateOf(false) }
 
-    // Estado para controlar a visibilidade do Popup de "Configuração SOS"
+
     var showSOSConfigDialog by remember { mutableStateOf(false) }
 
-    // Dados do contato SOS vindos da ViewModel
+
     val contatoSalvo by userViewModel.contatoSOS.collectAsState()
 
-    // --- POPUP (ALERT DIALOG) SOBRE ---
+
     if (showAboutDialog) {
         AlertDialog(
             onDismissRequest = { showAboutDialog = false },
@@ -84,10 +84,9 @@ fun AjustesScreen(navController: NavController, userViewModel: UserViewModel) {
         )
     }
 
-    // --- POPUP (ALERT DIALOG) CONFIGURAÇÃO SOS ---
+
     if (showSOSConfigDialog) {
-        // Estados locais para os campos de texto do diálogo
-        // Inicializa com o valor salvo ou vazio
+
         var nomeTemp by remember { mutableStateOf(contatoSalvo?.nome ?: "") }
         var telefoneTemp by remember { mutableStateOf(contatoSalvo?.telefone ?: "") }
 
@@ -161,7 +160,7 @@ fun AjustesScreen(navController: NavController, userViewModel: UserViewModel) {
             .background(Color(0xFFF5F5F5))
             .verticalScroll(rememberScrollState())
     ) {
-        // Cabeçalho com o Nome
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -172,7 +171,7 @@ fun AjustesScreen(navController: NavController, userViewModel: UserViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Botão de Voltar
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -189,7 +188,7 @@ fun AjustesScreen(navController: NavController, userViewModel: UserViewModel) {
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Ícone de Perfil Grande
+
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
                     contentDescription = "Foto de Perfil",
@@ -202,7 +201,7 @@ fun AjustesScreen(navController: NavController, userViewModel: UserViewModel) {
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Exibe o nome ou o texto padrão
+
                 Text(
                     text = username ?: "Usuário não logado",
                     fontSize = 22.sp,
@@ -222,11 +221,11 @@ fun AjustesScreen(navController: NavController, userViewModel: UserViewModel) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // --- LISTA DE OPÇÕES ---
+        //LISTA DE OPÇÕES
 
         OptionItem(icon = Icons.Default.Person, title = "Dados Pessoais")
 
-        // Botão modificado para abrir o diálogo de Configuração SOS
+
         OptionItem(
             icon = Icons.Default.Settings,
             title = "Configurações (SOS)",
@@ -241,7 +240,7 @@ fun AjustesScreen(navController: NavController, userViewModel: UserViewModel) {
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        // Botão de Sair (Logout)
+
         if (username != null) {
             Button(
                 onClick = {

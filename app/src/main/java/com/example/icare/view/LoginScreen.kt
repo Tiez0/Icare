@@ -39,8 +39,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel) {
     val mensagemErro by userViewModel.mensagemErro.collectAsState()
     val currentUser by userViewModel.username.collectAsState()
 
-    // --- AUTO LOGIN (Lembrar Usuário) ---
-    // Se ao abrir a tela já tiver um usuário carregado (do SharedPreferences), entra direto.
+
     LaunchedEffect(currentUser) {
         if (currentUser != null) {
             navController.navigate("home") {
@@ -49,7 +48,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel) {
         }
     }
 
-    // Navegação após Login Manual com Sucesso
+
     LaunchedEffect(loginStatus) {
         if (loginStatus == true) {
             userViewModel.resetLoginStatus()

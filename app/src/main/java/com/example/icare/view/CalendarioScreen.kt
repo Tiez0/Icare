@@ -29,7 +29,7 @@ fun CalendarioScreen(navController: NavController, userViewModel: UserViewModel)
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
-    // Estado para a data selecionada (Padrão: Hoje)
+
     var dataSelecionada by remember { mutableStateOf("Hoje") }
     var diaDaSemanaIndex by remember { mutableStateOf(calendar.get(Calendar.DAY_OF_WEEK) - 1) } // 0=Dom, 6=Sab
 
@@ -53,7 +53,6 @@ fun CalendarioScreen(navController: NavController, userViewModel: UserViewModel)
         Text("Calendário de Doses", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botão para trocar data
         Button(
             onClick = { datePickerDialog.show() },
             colors = ButtonDefaults.buttonColors(containerColor = Color.White),

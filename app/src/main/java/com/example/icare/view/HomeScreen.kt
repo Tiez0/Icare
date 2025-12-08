@@ -107,7 +107,7 @@ fun HomeContent(navController: NavController, userViewModel: UserViewModel) {
     val remedios by userViewModel.remedios.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Fundo Verde Curvo
+
         Canvas(modifier = Modifier.fillMaxWidth().height(250.dp)) {
             val curveHeight = 50.dp.toPx()
             val path = Path().apply {
@@ -117,7 +117,7 @@ fun HomeContent(navController: NavController, userViewModel: UserViewModel) {
             drawPath(path, color = Color(0xFF88e788))
         }
 
-        // Coluna Principal com Rolagem Vertical
+
         Column(
             modifier = Modifier
                 .padding(16.dp)
@@ -149,7 +149,7 @@ fun HomeContent(navController: NavController, userViewModel: UserViewModel) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Lógica da Lista Vertical
+
             if (remedios.isEmpty()) {
                 Card(
                     modifier = Modifier.fillMaxWidth().height(100.dp).clickable { navController.navigate(Screen.Remedios.route) },
@@ -217,7 +217,7 @@ fun HomeContent(navController: NavController, userViewModel: UserViewModel) {
                             }
                         }
                     }
-                    // Espaço extra no final para não ficar colado na barra inferior
+
                     Spacer(modifier = Modifier.height(80.dp))
                 }
             }

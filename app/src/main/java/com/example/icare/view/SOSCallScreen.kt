@@ -31,7 +31,7 @@ fun SOSCallScreen(navController: NavController, userViewModel: UserViewModel) {
     val contato by userViewModel.contatoSOS.collectAsState()
     val context = LocalContext.current
 
-    // Animação de Pulso do ícone
+
     val infiniteTransition = rememberInfiniteTransition()
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -42,7 +42,7 @@ fun SOSCallScreen(navController: NavController, userViewModel: UserViewModel) {
         )
     )
 
-    // Lógica de Vibração
+
     DisposableEffect(Unit) {
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
@@ -103,7 +103,7 @@ fun SOSCallScreen(navController: NavController, userViewModel: UserViewModel) {
             )
         }
 
-        // Ícone Pulsante no Meio
+
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -119,7 +119,7 @@ fun SOSCallScreen(navController: NavController, userViewModel: UserViewModel) {
             )
         }
 
-        // Botão Desligar
+
         Button(
             onClick = { navController.popBackStack() }, // Volta para a Home
             modifier = Modifier

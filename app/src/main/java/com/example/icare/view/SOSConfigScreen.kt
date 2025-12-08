@@ -31,7 +31,7 @@ fun SOSConfigScreen(navController: NavController, userViewModel: UserViewModel) 
     var nome by remember { mutableStateOf("") }
     var telefone by remember { mutableStateOf("") }
 
-    // Carrega dados se já existirem (para editar)
+
     val contatoSalvo by userViewModel.contatoSOS.collectAsState()
     LaunchedEffect(contatoSalvo) {
         contatoSalvo?.let {
@@ -60,7 +60,7 @@ fun SOSConfigScreen(navController: NavController, userViewModel: UserViewModel) 
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize()) {
-            // Fundo Verde Curvo (Padrão do App)
+
             Canvas(modifier = Modifier.fillMaxWidth().height(200.dp)) {
                 val curveHeight = 50.dp.toPx()
                 val path = Path().apply {
@@ -80,7 +80,7 @@ fun SOSConfigScreen(navController: NavController, userViewModel: UserViewModel) 
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Ícone Grande
+
                 Icon(
                     imageVector = Icons.Default.Warning,
                     contentDescription = null,
